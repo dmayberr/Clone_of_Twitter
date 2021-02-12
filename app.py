@@ -141,7 +141,7 @@ def list_users():
 @app.route('/users/<int:user_id>')
 def users_show(user_id):
     """Show user profile."""
-
+    
     user = User.query.get_or_404(user_id)
 
     # snagging messages in order from the database;
@@ -152,6 +152,8 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
+    
+
     return render_template('users/show.html', user=user, messages=messages)
 
 

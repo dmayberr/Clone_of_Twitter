@@ -26,6 +26,8 @@ class Follows(db.Model):
         primary_key=True,
     )
 
+    
+
 
 class Likes(db.Model):
     """Mapping user likes to warbles."""
@@ -125,7 +127,7 @@ class User(db.Model):
         return len(found_user_list) == 1
 
     def is_following(self, other_user):
-        """Is this user following `other_use`?"""
+        """Is this user following `other_user`?"""
 
         found_user_list = [user for user in self.following if user == other_user]
         return len(found_user_list) == 1
@@ -198,8 +200,10 @@ class Message(db.Model):
     )
 
     user = db.relationship('User')
+    
 
 
+   
 def connect_db(app):
     """Connect this database to provided Flask app.
 

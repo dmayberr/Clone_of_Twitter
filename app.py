@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UpdateUserForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Follows
 
 CURR_USER_KEY = "curr_user"
 
@@ -211,18 +211,28 @@ def stop_following(follow_id):
     return redirect(f"/users/{g.user.id}/following")
 
 
-@app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+@app.route('/users/<int:id>/edit', methods=["GET", "POST"])
+def edit_profile(id):
     """Update profile for current user."""
 
-    form = UpdateUserForm()
     user = User.query.get_or_404(g.user.id)
+    form = UpdateUserForm(obj=user)    
     
     if not g.user:
         flash("Access unauthorized.", "danger")
-        return redirect("/")   
-    
-    return render_template("users/edit.html", form=form)
+        return redirect("/") 
+
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.image_url = form.image_url.data
+        user.header_image_url = form.header_image_url.data
+        user.location = form.location.data
+        user.bio = form.bio.data
+        db.session.commit()
+        return redirect(f"/users/{id}")
+    else:
+        return render_template("users/edit.html", user=user, form=form)
 
   
 
@@ -302,19 +312,19 @@ def homepage():
 
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
-    """
+    """          
 
-    if g.user:
+    if g.user: 
         messages = (Message
-                    .query
+                    .query                                             
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
+        
 
         return render_template('home.html', messages=messages)
-
-    else:
-        return render_template('home-anon.html')
+    
+    return render_template('home-anon.html')
 
 
 ##############################################################################
